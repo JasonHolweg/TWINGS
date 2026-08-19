@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TWINGS Designer</title>
+<meta name="description" content="Design custom Minecraft particle wings in your browser — with a live 3D preview.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M12 20C12 20 13 10 22 4C22 4 21.5 12.5 16 16.5C13.5 18.3 12 20 12 20Z" fill="#7c6cff"/>
+      <path d="M12 20C12 20 11 10 2 4C2 4 2.5 12.5 8 16.5C10.5 18.3 12 20 12 20Z" fill="#5b4dd4"/>
+    </svg>
+    TWINGS
+  </a>
+  <div class="nav-tabs">
+    <a class="nav-tab active" href="index.html" data-i18n="navDesigner">Designer</a>
+    <a class="nav-tab" href="library.html" data-i18n="navLibrary">Bibliothek</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-ghost btn-sm" id="helpBtn" data-i18n="help">Hilfe</button>
+    <div class="lang-switch">
+      <button class="lang-opt" data-lang="de">DE</button>
+      <button class="lang-opt" data-lang="en">EN</button>
+    </div>
+  </div>
+</nav>
+
+<main class="page workspace">
+  <!-- ============ left: editor ============ -->
+  <div class="col">
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title" data-i18n="editor">Editor</h2>
+        <div class="panel-tools">
+          <button class="btn btn-ghost btn-icon" id="undoBtn" title="Rückgängig (Cmd+Z)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-icon" id="redoBtn" title="Wiederholen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
+          </button>
+          <button class="btn btn-ghost btn-icon" id="clearBtn" title="Alles löschen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <canvas id="grid"></canvas>
+
+      <div class="section-label" data-i18n="colors">Farben</div>
+      <div class="palette" id="colorPalette"></div>
+
+      <div class="section-label" data-i18n="particles">Minecraft-Partikel</div>
+      <div class="palette" id="specialPalette"></div>
+
+      <div class="switch-group">
+        <div class="switch-row">
+          <span class="label" data-i18n="mirror">Spiegeln</span>
+          <button class="switch" id="mirrorSwitch" role="switch" aria-checked="true"></button>
+        </div>
+        <div class="switch-row">
+          <span class="label" data-i18n="anim">Animation</span>
+          <button class="switch" id="animSwitch" role="switch" aria-checked="true"></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2 class="panel-title" data-i18n="settings">Einstellungen</h2></div>
+      <div class="sliders">
+        <div class="slider"><label><span data-i18n="sAngle">Flügel-Winkel</span><output id="degVal"></output></label>
+          <input type="range" id="deg" min="0" max="80" step="1"></div>
+        <div class="slider"><label><span data-i18n="sTilt">Neigung</span><output id="tiltVal"></output></label>
+          <input type="range" id="tilt" min="-45" max="60" step="1"></div>
+        <div class="slider"><label><span data-i18n="sSpacing">Größe</span><output id="spacingVal"></output></label>
+          <input type="range" id="spacing" min="0.03" max="0.14" step="0.005"></div>
+        <div class="slider"><label><span data-i18n="sUp">Höhe</span><output id="moveupVal"></output></label>
+          <input type="range" id="moveup" min="-1" max="1.5" step="0.05"></div>
+        <div class="slider"><label><span data-i18n="sBack">Abstand zum Rücken</span><output id="movebackVal"></output></label>
+          <input type="range" id="moveback" min="0" max="1.5" step="0.05"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2 class="panel-title" data-i18n="templates">Vorlagen</h2></div>
+      <div class="chips" id="templates"></div>
+    </section>
+  </div>
+
+  <!-- ============ right: preview + publish ============ -->
+  <div class="col">
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title" data-i18n="preview">Vorschau</h2>
+        <span style="font-size:12px;color:var(--text-3)" data-i18n="dragHint">Ziehen zum Drehen</span>
+      </div>
+      <canvas id="preview"></canvas>
+      <div class="preview-controls">
+        <button class="pill-toggle" id="sneakBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v9"/><path d="m7 10 5 5 5-5"/><path d="M5 19h14"/></svg>
+          <span data-i18n="sneak">Schleichen</span>
+        </button>
+        <button class="pill-toggle on" id="spinBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg>
+          <span data-i18n="spin">Drehen</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2 class="panel-title" data-i18n="publish">Veröffentlichen</h2></div>
+      <div class="field"><span><span data-i18n="nameLabel">Name</span> <span class="req">*</span></span>
+        <input type="text" id="wingName" maxlength="40" data-i18n-ph="namePh" placeholder="Drachenflügel"></div>
+      <div class="field"><span data-i18n="creatorLabel">Ersteller</span>
+        <input type="text" id="creatorName" maxlength="30" data-i18n-ph="creatorPh" placeholder="Dein Name"></div>
+      <div class="field"><span data-i18n="descLabel">Beschreibung (optional)</span>
+        <textarea id="wingDesc" maxlength="300" rows="2" data-i18n-ph="descPh" placeholder="Erzähl etwas über deine Flügel …"></textarea></div>
+      <div class="actions">
+        <button class="btn btn-primary btn-block" id="publishBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 13v8"/><path d="M8.5 16.5 12 13l3.5 3.5"/><path d="M20 16.7A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/></svg>
+          <span data-i18n="publishBtn">In der Bibliothek veröffentlichen</span>
+        </button>
+      </div>
+      <div class="actions" style="margin-top:8px">
+        <button class="btn btn-sm" id="exportBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+          <span data-i18n="export">Datei speichern</span>
+        </button>
+        <button class="btn btn-sm" id="importBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 8 5-5 5 5"/><path d="M12 3v12"/></svg>
+          <span data-i18n="import">Datei öffnen</span>
+        </button>
+        <input type="file" id="importFile" accept=".yml,.yaml,.png,.jpg,.jpeg,.gif" hidden>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <span>TWINGS Designer</span>
+  <a href="https://www.spigotmc.org/resources/82088/" target="_blank" rel="noopener">SpigotMC</a>
+  <a href="https://github.com/JasonHolweg/TWINGS" target="_blank" rel="noopener">GitHub</a>
+</footer>
+
+<!-- ============ dialogs ============ -->
+<dialog id="helpDialog">
+  <h3 data-i18n="helpTitle">So funktioniert’s</h3>
+  <ol>
+    <li data-i18n="help1">Wähle eine Farbe oder einen Minecraft-Partikel und male dein Muster. Mit „Spiegeln“ bleiben beide Flügel symmetrisch.</li>
+    <li data-i18n="help2">Rechts siehst du live, wie die Flügel im Spiel aussehen — ziehe, um dich zu drehen.</li>
+    <li data-i18n="help3">Gib deinen Flügeln einen Namen und veröffentliche sie in der Bibliothek.</li>
+    <li data-i18n="help4">Du bekommst einen Befehl wie /twings install ab12cd34. Gib ihn einem Server-Admin — fertig!</li>
+  </ol>
+  <div class="dialog-actions">
+    <button class="btn btn-primary" onclick="this.closest('dialog').close()" data-i18n="ok">Verstanden</button>
+  </div>
+</dialog>
+
+<dialog id="publishDialog">
+  <h3 data-i18n="publishedTitle">Veröffentlicht!</h3>
+  <p class="dialog-sub" data-i18n="publishedSub">Deine Flügel sind jetzt in der Bibliothek. Mit diesem Befehl installiert sie jeder Server-Admin:</p>
+  <div class="command-box">
+    <code id="cmdText">/twings install …</code>
+    <button class="btn btn-sm" id="copyCmdBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span data-i18n="copy">Kopieren</span>
+    </button>
+  </div>
+  <div class="dialog-actions">
+    <a class="btn" href="library.html" data-i18n="viewInLibrary">In der Bibliothek ansehen</a>
+    <button class="btn btn-primary" onclick="this.closest('dialog').close()" data-i18n="close">Schließen</button>
+  </div>
+</dialog>
+
+<script src="assets/textures.js"></script>
+<script src="assets/app.js"></script>
+<script>
+"use strict";
+/* =========================================================================
+   TWINGS Designer — editor, live 3D preview (exact plugin render math),
+   publish flow. Shared logic lives in assets/app.js.
+   ========================================================================= */
+
+setPageStrings({
+  de: {
+    editor: "Editor", colors: "Farben", particles: "Minecraft-Partikel",
+    mirror: "Spiegeln", anim: "Animation", settings: "Einstellungen",
+    sAngle: "Flügel-Winkel", sTilt: "Neigung", sSpacing: "Größe", sUp: "Höhe", sBack: "Abstand zum Rücken",
+    templates: "Vorlagen", preview: "Vorschau", dragHint: "Ziehen zum Drehen",
+    sneak: "Schleichen", spin: "Drehen",
+    publish: "Veröffentlichen", nameLabel: "Name", creatorLabel: "Ersteller",
+    descLabel: "Beschreibung (optional)",
+    namePh: "Drachenflügel", creatorPh: "Dein Name", descPh: "Erzähl etwas über deine Flügel …",
+    publishBtn: "In der Bibliothek veröffentlichen", publishing: "Wird veröffentlicht …",
+    export: "Datei speichern", import: "Datei öffnen",
+    helpTitle: "So funktioniert’s",
+    help1: "Wähle eine Farbe oder einen Minecraft-Partikel und male dein Muster. Mit „Spiegeln“ bleiben beide Flügel symmetrisch.",
+    help2: "Rechts siehst du live, wie die Flügel im Spiel aussehen — ziehe, um dich zu drehen.",
+    help3: "Gib deinen Flügeln einen Namen und veröffentliche sie in der Bibliothek.",
+    help4: "Du bekommst einen Befehl wie /twings install ab12cd34. Gib ihn einem Server-Admin — fertig!",
+    ok: "Verstanden",
+    publishedTitle: "Veröffentlicht!",
+    publishedSub: "Deine Flügel sind jetzt in der Bibliothek. Mit diesem Befehl installiert sie jeder Server-Admin:",
+    viewInLibrary: "In der Bibliothek ansehen",
+    saved: "Datei gespeichert", loaded: "Geladen", cleared: "Alles gelöscht",
+    needName: "Gib deinen Flügeln zuerst einen Namen.", needPixels: "Male zuerst ein paar Pixel.",
+    badFile: "Diese Datei kann nicht gelesen werden.",
+    publishFailed: "Veröffentlichen hat nicht geklappt.", rateLimited: "Zu viele Veröffentlichungen — probier es später wieder.",
+    remixLoaded: "Flügel aus der Bibliothek geladen",
+    mirrorOn: "Spiegeln an — beide Seiten bleiben gleich.", mirrorOff: "Spiegeln aus — du malst das ganze Bild.",
+    tplAngel: "Engel", tplFire: "Feuer", tplFairy: "Fee", tplBat: "Fledermaus", tplIce: "Eis", tplNature: "Natur",
+    eraser: "Radierer", customColor: "Eigene Farbe",
+  },
+  en: {
+    editor: "Editor", colors: "Colors", particles: "Minecraft particles",
+    mirror: "Mirror", anim: "Animation", settings: "Settings",
+    sAngle: "Wing angle", sTilt: "Tilt", sSpacing: "Size", sUp: "Height", sBack: "Distance from back",
+    templates: "Templates", preview: "Preview", dragHint: "Drag to rotate",
+    sneak: "Sneak", spin: "Rotate",
+    publish: "Publish", nameLabel: "Name", creatorLabel: "Creator",
+    descLabel: "Description (optional)",
+    namePh: "Dragon Wings", creatorPh: "Your name", descPh: "Tell something about your wings …",
+    publishBtn: "Publish to the library", publishing: "Publishing …",
+    export: "Save file", import: "Open file",
+    helpTitle: "How it works",
+    help1: "Pick a color or a Minecraft particle and paint your pattern. “Mirror” keeps both wings symmetric.",
+    help2: "The right side shows live how your wings look in-game — drag to rotate.",
+    help3: "Give your wings a name and publish them to the library.",
+    help4: "You get a command like /twings install ab12cd34. Give it to a server admin — done!",
+    ok: "Got it",
+    publishedTitle: "Published!",
+    publishedSub: "Your wings are now in the library. Any server admin can install them with this command:",
+    viewInLibrary: "View in library",
+    saved: "File saved", loaded: "Loaded", cleared: "Cleared",
+    needName: "Give your wings a name first.", needPixels: "Paint a few pixels first.",
+    badFile: "Cannot read that file.",
+    publishFailed: "Publishing failed.", rateLimited: "Too many publishes — try again later.",
+    remixLoaded: "Wing loaded from the library",
+    mirrorOn: "Mirror on — both sides stay identical.", mirrorOff: "Mirror off — you paint the whole picture.",
+    tplAngel: "Angel", tplFire: "Fire", tplFairy: "Fairy", tplBat: "Bat", tplIce: "Ice", tplNature: "Nature",
+    eraser: "Eraser", customColor: "Custom color",
+  },
+});
+
+const BASE_COLORS = ["#ffffff", "#ffd94a", "#ff9a2c", "#ff4d4d", "#ff5c9d", "#d86bff",
+                     "#8b7bff", "#4fa9ff", "#4fe0d8", "#5ee08a", "#a6e34e", "#9b6b43", "#5c5f79", "#16181f"];
+
+/* ---------------- state ---------------- */
+const DEFAULT_W = 12, DEFAULT_H = 14;
+let state = {
+  w: DEFAULT_W, h: DEFAULT_H,
+  cells: new Array(DEFAULT_W * DEFAULT_H).fill(null),
+  mirror: true, animated: true,
+  deg: 10, tilt: 10, spacing: 0.07, moveup: 0, moveback: 0,
+  sneakAdd: 0, rotation: 0, geometryCols: null,
+  name: "", creator: "",
+};
+let brush = { t: "c", hex: "#ffffff" };
+let undoStack = [], redoStack = [];
+let sneaking = false, autoSpin = true;
+
+function cellAt(c, r) { return state.cells[r * state.w + c] ?? null; }
+function setCell(c, r, v) { if (c >= 0 && c < state.w && r >= 0 && r < state.h) state.cells[r * state.w + c] = v; }
+// Snapshot the full editable state (not just cells) so undo restores the mirror
+// flag and settings that width-changing operations like the mirror toggle mutate.
+const SNAPSHOT_KEYS = ["w", "h", "mirror", "animated", "deg", "tilt", "spacing", "moveup", "moveback", "sneakAdd", "rotation", "geometryCols"];
+function snapshot() {
+  const s = { cells: state.cells };
+  for (const k of SNAPSHOT_KEYS) s[k] = state[k];
+  return JSON.stringify(s);
+}
+function pushUndo() {
+  undoStack.push(snapshot());
+  if (undoStack.length > 60) undoStack.shift();
+  redoStack.length = 0;
+  state.geometryCols = null;
+}
+function restore(snap) {
+  const s = JSON.parse(snap);
+  state.cells = s.cells;
+  for (const k of SNAPSHOT_KEYS) if (k in s) state[k] = s[k];
+  syncControls(); drawGrid(); persist();
+}
+function persist() { store.set("twings.design", JSON.stringify(state)); }
+function loadPersisted() {
+  try {
+    const s = JSON.parse(store.get("twings.design"));
+    if (s && Array.isArray(s.cells) && s.w > 0) state = Object.assign(state, s);
+  } catch (e) {}
+}
+
+/* ---------------- grid editor ---------------- */
+const grid = document.getElementById("grid");
+const gtx = grid.getContext("2d");
+
+function displayCols() { return state.mirror ? state.w * 2 : state.w; }
+function storedCol(dc) {
+  if (!state.mirror) return dc;
+  return dc < state.w ? dc : (state.w - 1) - (dc - state.w);
+}
+function drawGrid() {
+  const cols = displayCols(), rows = state.h;
+  const wCss = grid.clientWidth || 440;
+  const cell = Math.floor(wCss / cols);
+  const W = cell * cols, H = cell * rows;
+  const dpr = window.devicePixelRatio || 1;
+  grid.width = W * dpr; grid.height = H * dpr;
+  grid.style.height = H + "px";
+  gtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  gtx.imageSmoothingEnabled = false;
+  gtx.clearRect(0, 0, W, H);
+  for (let r = 0; r < rows; r++) {
+    for (let dc = 0; dc < cols; dc++) {
+      const v = cellAt(storedCol(dc), r);
+      const x = dc * cell, y = r * cell;
+      gtx.fillStyle = ((r + dc) % 2 === 0) ? "#121216" : "#0e0e12";
+      gtx.fillRect(x, y, cell, cell);
+      if (v) {
+        if (v.t === "c") {
+          gtx.fillStyle = v.hex;
+          gtx.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+        } else {
+          const sp = Textures.forCell(v);
+          if (sp) gtx.drawImage(sp, x + 1, y + 1, cell - 2, cell - 2);
+        }
+      }
+    }
+  }
+  if (state.mirror) {
+    gtx.fillStyle = "rgba(255,255,255,.14)";
+    gtx.fillRect(state.w * cell - 1, 0, 2, H);
+  }
+}
+
+let painting = false, paintedThisStroke = false;
+function gridPos(ev) {
+  const rect = grid.getBoundingClientRect();
+  const cols = displayCols();
+  return {
+    dc: Math.floor((ev.clientX - rect.left) / (rect.width / cols)),
+    r: Math.floor((ev.clientY - rect.top) / (rect.height / state.h)),
+  };
+}
+function paint(ev) {
+  const { dc, r } = gridPos(ev);
+  if (dc < 0 || dc >= displayCols() || r < 0 || r >= state.h) return;
+  const sc = storedCol(dc);
+  const v = brush ? { ...brush } : null;
+  if (JSON.stringify(cellAt(sc, r)) === JSON.stringify(v)) return;
+  if (!paintedThisStroke) { pushUndo(); paintedThisStroke = true; }
+  setCell(sc, r, v);
+  drawGrid(); persist();
+}
+grid.addEventListener("pointerdown", ev => { painting = true; paintedThisStroke = false; grid.setPointerCapture(ev.pointerId); paint(ev); });
+grid.addEventListener("pointermove", ev => { if (painting) paint(ev); });
+window.addEventListener("pointerup", () => { painting = false; });
+
+/* ---------------- palettes ---------------- */
+function selectSwatch(el) {
+  document.querySelectorAll(".swatch, .swatch-custom").forEach(s => s.classList.remove("sel"));
+  el.classList.add("sel");
+}
+function buildPalettes() {
+  const cp = document.getElementById("colorPalette");
+  cp.innerHTML = "";
+  const eraser = document.createElement("button");
+  eraser.className = "swatch swatch-eraser";
+  eraser.title = t("eraser");
+  eraser.onclick = () => { brush = null; selectSwatch(eraser); };
+  cp.appendChild(eraser);
+  BASE_COLORS.forEach(hex => {
+    const d = document.createElement("button");
+    d.className = "swatch";
+    d.style.background = hex;
+    d.onclick = () => { brush = { t: "c", hex }; selectSwatch(d); };
+    cp.appendChild(d);
+  });
+  const custom = document.createElement("input");
+  custom.type = "color"; custom.className = "swatch-custom"; custom.value = "#7c6cff";
+  custom.title = t("customColor");
+  custom.oninput = () => { brush = { t: "c", hex: custom.value }; selectSwatch(custom); };
+  custom.onclick = () => { brush = { t: "c", hex: custom.value }; selectSwatch(custom); };
+  cp.appendChild(custom);
+
+  const sp = document.getElementById("specialPalette");
+  sp.innerHTML = "";
+  Object.entries(SPECIALS).forEach(([key, def]) => {
+    const d = document.createElement("button");
+    d.className = "swatch";
+    d.title = def.p;
+    const sprite = Textures.sprite(def.tex, def.tint);
+    if (sprite) {
+      const icon = document.createElement("canvas");
+      icon.width = 22; icon.height = 22;
+      const ix = icon.getContext("2d");
+      ix.imageSmoothingEnabled = false;
+      ix.drawImage(sprite, 1, 1, 20, 20);
+      d.appendChild(icon);
+    }
+    d.onclick = () => { brush = { t: "s", key }; selectSwatch(d); };
+    sp.appendChild(d);
+  });
+  const first = cp.children[1];
+  if (first) first.classList.add("sel");
+}
+
+/* =========================================================================
+   3D preview — exact port of the plugin's WingRenderer (see WingRenderer.java
+   for the documented legacy quirks: /60 pseudo-radians, doubled offsets,
+   phantom pattern column). Player yaw is fixed at 0; the camera orbits.
+   ========================================================================= */
+const pv = document.getElementById("preview");
+const ptx = pv.getContext("2d");
+let cam = { yaw: 0.5, pitch: 0.28, dist: 4.6 };
+let flap = { v: 0, plus: true };
+let rot = { counter: 0, step: Math.floor(Math.random() * 20) };
+const COS45 = 0.7071067811865476;
+const ROTATION_SPEED = 0.2;
+
+function stepAnimationTick() {
+  if (state.mirror) {
+    if (flap.v <= 30 && flap.plus) flap.v += 2; else flap.plus = false;
+    if (flap.v > 0 && !flap.plus) flap.v -= 2; else flap.plus = true;
+  } else {
+    rot.counter++;
+    if (rot.step >= 300) { rot.step = 0; rot.counter = 0; }
+    if (rot.counter % 5 === 0) rot.step++;
+  }
+}
+
+function computeParticles() {
+  const out = [];
+  const len = state.geometryCols || (state.w + 1);
+  let space = state.spacing;
+  let baseDY = 1.4 + state.moveup;
+  if (sneaking) { baseDY -= 0.3; space -= 0.01; }
+  const flap2 = (state.animated && state.mirror) ? 2 * flap.v : 0;
+  const totalAdd = state.deg + (state.sneakAdd || 0) + flap2;
+  const oz = -COS45 * state.moveback;
+  let rotAngle = null;
+  if (state.animated && !state.mirror) rotAngle = rot.step / (ROTATION_SPEED * 90);
+  const tiltRad = state.tilt * Math.PI / 180;
+  const ct = Math.cos(tiltRad), st = Math.sin(tiltRad);
+  const halves = state.mirror ? [false, true] : [false];
+  for (const left of halves) {
+    const angle = rotAngle !== null ? rotAngle : -((180 + (left ? -1 : 1) * totalAdd) / 60) + 2.985 + (state.rotation || 0);
+    const ca = Math.cos(angle), sa = Math.sin(angle);
+    let defXrel;
+    if (left) defXrel = space * len;
+    else defXrel = state.mirror ? -space * len + space : -space * len / 2 + space;
+    // both mirror halves share the same back-offset (-0.25), matching the
+    // plugin; using +0.25 for one half pushes it in front of the body
+    const sideScale = state.mirror ? -0.25 : -0.5;
+    const v2z = sideScale; // yaw 0: side vector = (cos90, 0, sin90) = (0,0,1)
+    for (let r = 0; r < state.h; r++) {
+      for (let c = 0; c < state.w; c++) {
+        const cell = cellAt(c, r);
+        if (!cell) continue;
+        const dx = left ? defXrel - c * space : defXrel + c * space;
+        const dy = baseDY - r * space;
+        const ry = dy * ct, rz = dy * st;
+        const x2 = dx * ca + rz * sa;
+        const z2 = -dx * sa + rz * ca;
+        out.push({ x: 2 * x2, y: 2 * ry, z: oz + 2 * z2 + v2z, cell });
+      }
+    }
+  }
+  return out;
+}
+
+function project(p, W, H) {
+  const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+  const cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+  const ty = p.y - 1.1;
+  let x = cy * p.x + sy * p.z;
+  let z = -sy * p.x + cy * p.z;
+  let y = cp * ty - sp * z;
+  z = sp * ty + cp * z;
+  z += cam.dist;
+  if (z < 0.1) return null;
+  const f = (H * 0.98) / z;
+  return { sx: W / 2 + x * f, sy: H / 2 - y * f, z, f };
+}
+
+const PLAYER_BOXES = [
+  { c: [0, 1.62, 0],    s: [0.50, 0.46, 0.50], col: "#c79b73" },
+  { c: [0, 1.08, 0],    s: [0.50, 0.66, 0.26], col: "#2ea89a" },
+  { c: [-0.38, 1.08, 0], s: [0.24, 0.66, 0.24], col: "#279185" },
+  { c: [0.38, 1.08, 0],  s: [0.24, 0.66, 0.24], col: "#279185" },
+  { c: [-0.13, 0.38, 0], s: [0.24, 0.74, 0.24], col: "#3c4e9e" },
+  { c: [0.13, 0.38, 0],  s: [0.24, 0.74, 0.24], col: "#3c4e9e" },
+];
+function boxFaces(box) {
+  const [cx, cy, cz] = box.c, [w, h, d] = box.s;
+  const x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - h / 2, y1 = cy + h / 2, z0 = cz - d / 2, z1 = cz + d / 2;
+  const v = [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]];
+  return [
+    { i: [0, 1, 2, 3], n: [0, 0, -1] }, { i: [5, 4, 7, 6], n: [0, 0, 1] },
+    { i: [4, 0, 3, 7], n: [-1, 0, 0] }, { i: [1, 5, 6, 2], n: [1, 0, 0] },
+    { i: [3, 2, 6, 7], n: [0, 1, 0] }, { i: [4, 5, 1, 0], n: [0, -1, 0] },
+  ].map(f => ({ verts: f.i.map(ix => ({ x: v[ix][0], y: v[ix][1], z: v[ix][2] })), n: f.n, col: box.col }));
+}
+function shadeColor(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgb(${Math.min(255, ((n >> 16) & 255) * f) | 0},${Math.min(255, ((n >> 8) & 255) * f) | 0},${Math.min(255, (n & 255) * f) | 0})`;
+}
+
+let frameTick = 0;
+function renderPreview() {
+  const wCss = pv.clientWidth || 460;
+  const hCss = Math.round(wCss * 0.8);
+  const dpr = window.devicePixelRatio || 1;
+  if (pv.width !== wCss * dpr) { pv.width = wCss * dpr; pv.height = hCss * dpr; pv.style.height = hCss + "px"; }
+  ptx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = wCss, H = hCss;
+
+  const g = ptx.createRadialGradient(W / 2, H * 0.42, 40, W / 2, H * 0.42, H);
+  g.addColorStop(0, "#12121c");
+  g.addColorStop(1, "#08080d");
+  ptx.fillStyle = g; ptx.fillRect(0, 0, W, H);
+
+  const gp = project({ x: 0, y: 0, z: 0 }, W, H);
+  if (gp) {
+    ptx.fillStyle = "rgba(124,108,255,.06)";
+    ptx.beginPath();
+    ptx.ellipse(gp.sx, gp.sy, 1.3 * gp.f, 0.42 * gp.f * Math.max(0.25, Math.sin(cam.pitch) + 0.15), 0, 0, 7);
+    ptx.fill();
+  }
+
+  const drawables = [];
+  for (const box of PLAYER_BOXES) {
+    for (const face of boxFaces(box)) {
+      const pts = face.verts.map(v => project(v, W, H));
+      if (pts.some(p => !p)) continue;
+      drawables.push({ z: pts.reduce((a, p) => a + p.z, 0) / 4, kind: "face", pts, face });
+    }
+  }
+  for (const p of computeParticles()) {
+    const pr = project(p, W, H);
+    if (pr) drawables.push({ z: pr.z, kind: "sprite", pr, p });
+  }
+  drawables.sort((a, b) => b.z - a.z);
+
+  ptx.imageSmoothingEnabled = false;
+  for (const d of drawables) {
+    if (d.kind === "face") {
+      const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw);
+      const nz = -sy * d.face.n[0] + cy * d.face.n[2];
+      if (nz > 0.02) continue;
+      const shade = 0.6 + 0.4 * Math.max(0, -nz * 0.7 + d.face.n[1] * 0.4 + 0.2);
+      ptx.fillStyle = shadeColor(d.face.col, shade);
+      ptx.beginPath();
+      ptx.moveTo(d.pts[0].sx, d.pts[0].sy);
+      for (let i = 1; i < 4; i++) ptx.lineTo(d.pts[i].sx, d.pts[i].sy);
+      ptx.closePath(); ptx.fill();
+    } else {
+      const sprite = Textures.forCell(d.p.cell);
+      if (!sprite) continue;
+      const tw = 0.8 + 0.2 * Math.sin(frameTick * 0.3 + d.p.x * 13.7 + d.p.y * 7.1);
+      const size = Math.max(3, d.pr.f * 0.055) * tw * (d.p.cell.t === "s" ? 1.35 : 1);
+      ptx.globalCompositeOperation = "lighter";
+      ptx.drawImage(sprite, d.pr.sx - size / 2, d.pr.sy - size / 2, size, size);
+      ptx.globalCompositeOperation = "source-over";
+    }
+  }
+}
+
+let dragging = false, lastX = 0, lastY = 0;
+pv.addEventListener("pointerdown", ev => { dragging = true; lastX = ev.clientX; lastY = ev.clientY; pv.classList.add("dragging"); pv.setPointerCapture(ev.pointerId); });
+pv.addEventListener("pointermove", ev => {
+  if (!dragging) return;
+  cam.yaw += (ev.clientX - lastX) * 0.008;
+  cam.pitch = Math.max(-0.1, Math.min(1.1, cam.pitch + (ev.clientY - lastY) * 0.006));
+  lastX = ev.clientX; lastY = ev.clientY;
+});
+window.addEventListener("pointerup", () => { dragging = false; pv.classList.remove("dragging"); });
+pv.addEventListener("wheel", ev => { ev.preventDefault(); cam.dist = Math.max(2.6, Math.min(8, cam.dist + ev.deltaY * 0.003)); }, { passive: false });
+
+let lastAnim = 0;
+function loop(ts) {
+  if (ts - lastAnim >= 50) { stepAnimationTick(); lastAnim = ts; }
+  if (autoSpin && !dragging) cam.yaw += 0.004;
+  frameTick++;
+  renderPreview();
+  requestAnimationFrame(loop);
+}
+
+/* ---------------- import / export / templates ---------------- */
+function sanitizeFileName(name) {
+  return (name || "wings").toLowerCase()
+    .replace(/[ä]/g, "ae").replace(/[ö]/g, "oe").replace(/[ü]/g, "ue").replace(/ß/g, "ss")
+    .replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "").slice(0, 32) || "wings";
+}
+function applyGridData(data) {
+  pushUndo();
+  state.w = data.w; state.h = data.h; state.cells = data.cells;
+  state.geometryCols = data.geometryCols ?? null;
+  if (data.meta) {
+    state.mirror = data.meta.mirror;
+    state.animated = data.meta.animated;
+    state.deg = data.meta.deg; state.tilt = data.meta.tilt;
+    state.sneakAdd = data.meta.sneakAdd || 0; state.rotation = data.meta.rotation || 0;
+    state.spacing = data.meta.spacing; state.moveup = data.meta.moveup; state.moveback = data.meta.moveback;
+    if (data.meta.name) state.name = data.meta.name;
+    if (data.meta.creator) state.creator = data.meta.creator;
+  }
+  syncControls(); drawGrid(); persist();
+}
+function importWingYamlText(text) {
+  const data = gridFromParsed(parseWingYaml(text));
+  if (!data) return false;
+  applyGridData(data);
+  return true;
+}
+function importImage(file) {
+  const img = new Image();
+  img.onload = () => {
+    const MAX = 28;
+    const scale = Math.min(1, MAX / img.width, MAX / img.height);
+    const w = Math.max(1, Math.round(img.width * scale)), h = Math.max(1, Math.round(img.height * scale));
+    const oc = document.createElement("canvas"); oc.width = w; oc.height = h;
+    const octx = oc.getContext("2d");
+    octx.drawImage(img, 0, 0, w, h);
+    const data = octx.getImageData(0, 0, w, h).data;
+    pushUndo();
+    state.w = w; state.h = h; state.mirror = false; state.animated = false;
+    state.cells = new Array(w * h).fill(null);
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      const i = (r * w + c) * 4;
+      if (data[i + 3] > 120) {
+        setCell(c, r, { t: "c", hex: "#" + [data[i], data[i + 1], data[i + 2]].map(n => n.toString(16).padStart(2, "0")).join("") });
+      }
+    }
+    syncControls(); drawGrid(); persist(); toast(t("loaded"));
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+const TEMPLATES = [
+  { key: "tplAngel", dot: "#ffffff", mirror: true, deg: 14, tilt: 8, spacing: 0.075, moveup: 0.1, animated: true,
+    map: { w: { t: "c", hex: "#ffffff" }, g: { t: "c", hex: "#ffd94a" }, s: { t: "s", key: "ER" } },
+    rows: ["....s.......", "..www.......", ".wwwww......", "wwgwwww.....", "wggwwwww....", "wggwwwwww...",
+           ".wgwwwwwww..", ".wwwwwwwww..", "..wwwwwwww..", "...wwwwwww..", "....wwwww...", ".....www....",
+           "......ww....", ".......w...."] },
+  { key: "tplFire", dot: "#ff9a2c", mirror: true, deg: 12, tilt: 12, spacing: 0.075, moveup: 0, animated: true,
+    map: { f: { t: "s", key: "FL" }, r: { t: "c", hex: "#ff4d4d" }, o: { t: "c", hex: "#ff9a2c" }, y: { t: "c", hex: "#ffd94a" } },
+    rows: ["f...........", ".f..f.......", "roroyf......", "rooroo......", ".rooroor....", ".rroorooo...",
+           "..rrooroor..", "..rrrooroo..", "...rrooroo..", "....rroor...", ".....rror...", "......rr....",
+           ".......r...."] },
+  { key: "tplFairy", dot: "#ff5c9d", mirror: true, deg: 20, tilt: 6, spacing: 0.065, moveup: 0.15, animated: true,
+    map: { p: { t: "c", hex: "#ff5c9d" }, l: { t: "c", hex: "#d86bff" }, w: { t: "c", hex: "#ffffff" }, s: { t: "s", key: "EN" } },
+    rows: ["....s.......", "..ppp.......", ".plllp......", "pllwllp.....", "pllwwllp....", ".pllwllp....",
+           "..plllpp....", "...ppp.s....", "..ppp.......", ".pllp.......", "pllp........", ".pp........."] },
+  { key: "tplBat", dot: "#8b7bff", mirror: true, deg: 8, tilt: 16, spacing: 0.08, moveup: -0.05, animated: true,
+    map: { d: { t: "c", hex: "#2b2438" }, v: { t: "c", hex: "#5c4a8c" }, m: { t: "c", hex: "#8b7bff" } },
+    rows: ["d...........", "dd..........", "dvd.....d...", "dvvd...dd...", "dvvvd.dvd...", "dvmvvdvvd...",
+           "dvmmvvvd....", ".dvmmvvd....", ".dvmvvd.....", "..dvvd......", "..dvd.......", "...d........"] },
+  { key: "tplIce", dot: "#4fa9ff", mirror: true, deg: 16, tilt: 10, spacing: 0.07, moveup: 0.05, animated: true,
+    map: { b: { t: "c", hex: "#4fa9ff" }, h: { t: "c", hex: "#bfe6ff" }, w: { t: "c", hex: "#ffffff" }, s: { t: "s", key: "SN" } },
+    rows: ["s...........", ".bb.........", "bhhb........", "bhwhb.......", "bhwwhb......", ".bhwwhb.....",
+           ".bhwwwhb....", "..bhwwhb....", "..bhwhb.....", "...bhb..s...", "...bb.......", "....b......."] },
+  { key: "tplNature", dot: "#5ee08a", mirror: true, deg: 12, tilt: 8, spacing: 0.075, moveup: 0, animated: true,
+    map: { g: { t: "c", hex: "#5ee08a" }, d: { t: "c", hex: "#2e9e58" }, y: { t: "c", hex: "#a6e34e" }, h: { t: "s", key: "HV" } },
+    rows: ["h...........", ".gg.........", "gyyg........", "gydyg.......", "gydydg......", ".gydydg.....",
+           ".gyddydg....", "..gyddyg....", "..gydyg.....", "...gyg...h..", "...gg.......", "....g......."] },
+];
+function loadTemplate(tpl) {
+  pushUndo();
+  const h = tpl.rows.length, w = Math.max(...tpl.rows.map(r => r.length));
+  state.w = w; state.h = h;
+  state.cells = new Array(w * h).fill(null);
+  tpl.rows.forEach((row, r) => {
+    [...row].forEach((ch, c) => { if (tpl.map[ch]) setCell(c, r, { ...tpl.map[ch] }); });
+  });
+  state.mirror = tpl.mirror; state.animated = tpl.animated;
+  state.deg = tpl.deg; state.tilt = tpl.tilt; state.spacing = tpl.spacing;
+  state.moveup = tpl.moveup; state.moveback = 0;
+  state.sneakAdd = 0; state.rotation = 0;
+  syncControls(); drawGrid(); persist();
+}
+function buildTemplates() {
+  const box = document.getElementById("templates");
+  box.innerHTML = "";
+  TEMPLATES.forEach(tpl => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    const dot = document.createElement("span");
+    dot.className = "dot"; dot.style.background = tpl.dot;
+    const label = document.createElement("span");
+    label.textContent = t(tpl.key);
+    b.append(dot, label);
+    b.onclick = () => loadTemplate(tpl);
+    box.appendChild(b);
+  });
+}
+
+/* ---------------- publish ---------------- */
+async function publish() {
+  state.name = document.getElementById("wingName").value.trim();
+  state.creator = document.getElementById("creatorName").value.trim();
+  const description = document.getElementById("wingDesc").value.trim();
+  if (state.name.length < 2) { toast(t("needName"), "err"); document.getElementById("wingName").focus(); return; }
+  if (!state.cells.some(Boolean)) { toast(t("needPixels"), "err"); return; }
+  const btn = document.getElementById("publishBtn");
+  btn.disabled = true;
+  btn.querySelector("span").textContent = t("publishing");
+  try {
+    const res = await api.publish({
+      name: state.name,
+      creator: state.creator || "Anonym",
+      description,
+      yaml: yamlFromState(state),
+    });
+    if (res && res.ok) {
+      document.getElementById("cmdText").textContent = installCommand(res.id);
+      document.getElementById("publishDialog").showModal();
+    } else if (res && res.error === "rate_limited") {
+      toast(t("rateLimited"), "err");
+    } else {
+      toast(t("publishFailed"), "err");
+    }
+  } catch (e) {
+    toast(t("publishFailed"), "err");
+  } finally {
+    btn.disabled = false;
+    btn.querySelector("span").textContent = t("publishBtn");
+  }
+}
+
+/* ---------------- controls ---------------- */
+function syncControls() {
+  for (const [id, key, fmt] of [["deg", "deg", v => v + "°"], ["tilt", "tilt", v => v + "°"],
+      ["spacing", "spacing", v => v.toFixed(3)], ["moveup", "moveup", v => v.toFixed(2)], ["moveback", "moveback", v => v.toFixed(2)]]) {
+    document.getElementById(id).value = state[key];
+    document.getElementById(id + "Val").textContent = fmt(state[key]);
+  }
+  document.getElementById("mirrorSwitch").setAttribute("aria-checked", state.mirror);
+  document.getElementById("animSwitch").setAttribute("aria-checked", state.animated);
+  document.getElementById("wingName").value = state.name;
+  document.getElementById("creatorName").value = state.creator;
+}
+
+function wire() {
+  for (const [id, key] of [["deg", "deg"], ["tilt", "tilt"], ["spacing", "spacing"], ["moveup", "moveup"], ["moveback", "moveback"]]) {
+    document.getElementById(id).addEventListener("input", ev => {
+      state[key] = parseFloat(ev.target.value);
+      syncControls(); persist();
+    });
+  }
+  document.getElementById("mirrorSwitch").onclick = () => {
+    pushUndo();
+    state.mirror = !state.mirror;
+    toast(state.mirror ? t("mirrorOn") : t("mirrorOff"));
+    if (!state.mirror) {
+      const w2 = state.w * 2, cells = new Array(w2 * state.h).fill(null);
+      for (let r = 0; r < state.h; r++) for (let dc = 0; dc < w2; dc++) {
+        const sc = dc < state.w ? dc : (state.w - 1) - (dc - state.w);
+        cells[r * w2 + dc] = cellAt(sc, r) ? { ...cellAt(sc, r) } : null;
+      }
+      state.w = w2; state.cells = cells;
+    } else {
+      const w2 = Math.max(1, Math.floor(state.w / 2));
+      const cells = new Array(w2 * state.h).fill(null);
+      for (let r = 0; r < state.h; r++) for (let c = 0; c < w2; c++) {
+        cells[r * w2 + c] = cellAt(c, r) ? { ...cellAt(c, r) } : null;
+      }
+      state.w = w2; state.cells = cells;
+    }
+    syncControls(); drawGrid(); persist();
+  };
+  document.getElementById("animSwitch").onclick = () => {
+    state.animated = !state.animated; syncControls(); persist();
+  };
+  document.getElementById("undoBtn").onclick = () => {
+    if (!undoStack.length) return;
+    redoStack.push(snapshot());
+    restore(undoStack.pop());
+  };
+  document.getElementById("redoBtn").onclick = () => {
+    if (!redoStack.length) return;
+    undoStack.push(snapshot());
+    restore(redoStack.pop());
+  };
+  window.addEventListener("keydown", ev => {
+    if ((ev.metaKey || ev.ctrlKey) && ev.key === "z") {
+      ev.preventDefault();
+      (ev.shiftKey ? document.getElementById("redoBtn") : document.getElementById("undoBtn")).click();
+    }
+  });
+  document.getElementById("clearBtn").onclick = () => {
+    pushUndo();
+    state.cells = new Array(state.w * state.h).fill(null);
+    drawGrid(); persist(); toast(t("cleared"));
+  };
+  document.getElementById("sneakBtn").onclick = ev => {
+    sneaking = !sneaking; ev.currentTarget.classList.toggle("on", sneaking);
+  };
+  document.getElementById("spinBtn").onclick = ev => {
+    autoSpin = !autoSpin; ev.currentTarget.classList.toggle("on", autoSpin);
+  };
+  document.getElementById("wingName").addEventListener("input", ev => { state.name = ev.target.value; persist(); });
+  document.getElementById("creatorName").addEventListener("input", ev => { state.creator = ev.target.value; persist(); });
+  document.getElementById("publishBtn").onclick = publish;
+  document.getElementById("exportBtn").onclick = () => {
+    state.name = document.getElementById("wingName").value.trim();
+    if (state.name.length < 2) { toast(t("needName"), "err"); document.getElementById("wingName").focus(); return; }
+    const blob = new Blob([yamlFromState(state)], { type: "text/yaml" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = sanitizeFileName(state.name) + ".yml";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(t("saved"));
+  };
+  document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
+  document.getElementById("importFile").addEventListener("change", ev => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    ev.target.value = "";
+    if (/\.(png|jpe?g|gif)$/i.test(file.name)) { importImage(file); return; }
+    file.text().then(txt => {
+      if (importWingYamlText(txt)) toast(t("loaded")); else toast(t("badFile"), "err");
+    });
+  });
+  document.getElementById("copyCmdBtn").onclick = async ev => {
+    const span = ev.currentTarget.querySelector("span"); // capture before await; currentTarget is null after
+    const ok = await copyText(document.getElementById("cmdText").textContent);
+    if (ok) {
+      span.textContent = t("copied");
+      setTimeout(() => { span.textContent = t("copy"); }, 1600);
+    }
+  };
+  document.getElementById("helpBtn").onclick = () => document.getElementById("helpDialog").showModal();
+  window.addEventListener("resize", drawGrid);
+  document.addEventListener("langchange", () => { buildTemplates(); syncControls(); });
+}
+
+/* ---------------- boot ---------------- */
+Textures.load().then(async () => {
+  loadPersisted();
+  initNav();
+  applyLang();
+  buildPalettes();
+  buildTemplates();
+  wire();
+  syncControls();
+
+  const remixId = new URLSearchParams(location.search).get("wing");
+  if (remixId && /^[a-z0-9]{4,20}$/.test(remixId)) {
+    const yaml = await api.getYaml(remixId);
+    if (yaml && importWingYamlText(yaml)) toast(t("remixLoaded"));
+  }
+  if (state.cells.every(c => !c)) loadTemplate(TEMPLATES[0]);
+  drawGrid();
+  requestAnimationFrame(loop);
+});
+</script>
+</body>
+</html>
