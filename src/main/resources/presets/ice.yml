@@ -1,0 +1,39 @@
+# TWINGS preset wing
+Particles:
+  b: 'DUST:79,169,255:0.8'
+  h: 'DUST:191,230,255:0.8'
+  w: 'DUST:255,255,255:0.8'
+  s: 'SNOWFLAKE'
+Item:
+  Material: ELYTRA
+  Name: '&bIce Wings'
+permission: ''
+creator: 'TWINGS'
+DegreeAddition: 16
+SneakingDegreeAddition: 0
+ShowWhenRunning: false
+tilt: 10
+tiltbefore: false
+runtilt: 0
+mirrow: true
+moveup: 0.05
+moveback: 0
+rotation: 0
+spacing: 0.07
+category: wings
+Animated: true
+exclude:
+- x
+pattern:
+- s,x,x,x,x,x,x,x,x,x,x,x
+- x,b,b,x,x,x,x,x,x,x,x,x
+- b,h,h,b,x,x,x,x,x,x,x,x
+- b,h,w,h,b,x,x,x,x,x,x,x
+- b,h,w,w,h,b,x,x,x,x,x,x
+- x,b,h,w,w,h,b,x,x,x,x,x
+- x,b,h,w,w,w,h,b,x,x,x,x
+- x,x,b,h,w,w,h,b,x,x,x,x
+- x,x,b,h,w,h,b,x,x,x,x,x
+- x,x,x,b,h,b,x,x,s,x,x,x
+- x,x,x,b,b,x,x,x,x,x,x,x
+- x,x,x,x,b,x,x,x,x,x,x,x

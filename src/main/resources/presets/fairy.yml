@@ -1,0 +1,39 @@
+# TWINGS preset wing
+Particles:
+  p: 'DUST:255,92,157:0.8'
+  l: 'DUST:216,107,255:0.8'
+  w: 'DUST:255,255,255:0.8'
+  s: 'ENCHANT'
+Item:
+  Material: ELYTRA
+  Name: '&dFairy Wings'
+permission: ''
+creator: 'TWINGS'
+DegreeAddition: 20
+SneakingDegreeAddition: 0
+ShowWhenRunning: false
+tilt: 6
+tiltbefore: false
+runtilt: 0
+mirrow: true
+moveup: 0.15
+moveback: 0
+rotation: 0
+spacing: 0.065
+category: wings
+Animated: true
+exclude:
+- x
+pattern:
+- x,x,x,x,s,x,x,x,x,x,x,x
+- x,x,p,p,p,x,x,x,x,x,x,x
+- x,p,l,l,l,p,x,x,x,x,x,x
+- p,l,l,w,l,l,p,x,x,x,x,x
+- p,l,l,w,w,l,l,p,x,x,x,x
+- x,p,l,l,w,l,l,p,x,x,x,x
+- x,x,p,l,l,l,p,p,x,x,x,x
+- x,x,x,p,p,p,x,s,x,x,x,x
+- x,x,p,p,p,x,x,x,x,x,x,x
+- x,p,l,l,p,x,x,x,x,x,x,x
+- p,l,l,p,x,x,x,x,x,x,x,x
+- x,p,p,x,x,x,x,x,x,x,x,x

@@ -1,0 +1,40 @@
+# TWINGS preset wing
+Particles:
+  f: 'FLAME'
+  r: 'DUST:255,77,77:0.8'
+  o: 'DUST:255,154,44:0.8'
+  y: 'DUST:255,217,74:0.8'
+Item:
+  Material: ELYTRA
+  Name: '&6Fire Wings'
+permission: ''
+creator: 'TWINGS'
+DegreeAddition: 12
+SneakingDegreeAddition: 0
+ShowWhenRunning: false
+tilt: 12
+tiltbefore: false
+runtilt: 0
+mirrow: true
+moveup: 0
+moveback: 0
+rotation: 0
+spacing: 0.075
+category: wings
+Animated: true
+exclude:
+- x
+pattern:
+- f,x,x,x,x,x,x,x,x,x,x,x
+- x,f,x,x,f,x,x,x,x,x,x,x
+- r,o,r,o,y,f,x,x,x,x,x,x
+- r,o,o,r,o,o,x,x,x,x,x,x
+- x,r,o,o,r,o,o,r,x,x,x,x
+- x,r,r,o,o,r,o,o,o,x,x,x
+- x,x,r,r,o,o,r,o,o,r,x,x
+- x,x,r,r,r,o,o,r,o,o,x,x
+- x,x,x,r,r,o,o,r,o,o,x,x
+- x,x,x,x,r,r,o,o,r,x,x,x
+- x,x,x,x,x,r,r,o,r,x,x,x
+- x,x,x,x,x,x,r,r,x,x,x,x
+- x,x,x,x,x,x,x,r,x,x,x,x

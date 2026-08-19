@@ -1,0 +1,38 @@
+# TWINGS preset wing
+Particles:
+  d: 'DUST:43,36,56:0.8'
+  v: 'DUST:92,74,140:0.8'
+  m: 'DUST:139,123,255:0.8'
+Item:
+  Material: ELYTRA
+  Name: '&5Bat Wings'
+permission: ''
+creator: 'TWINGS'
+DegreeAddition: 8
+SneakingDegreeAddition: 0
+ShowWhenRunning: false
+tilt: 16
+tiltbefore: false
+runtilt: 0
+mirrow: true
+moveup: -0.05
+moveback: 0
+rotation: 0
+spacing: 0.08
+category: wings
+Animated: true
+exclude:
+- x
+pattern:
+- d,x,x,x,x,x,x,x,x,x,x,x
+- d,d,x,x,x,x,x,x,x,x,x,x
+- d,v,d,x,x,x,x,x,d,x,x,x
+- d,v,v,d,x,x,x,d,d,x,x,x
+- d,v,v,v,d,x,d,v,d,x,x,x
+- d,v,m,v,v,d,v,v,d,x,x,x
+- d,v,m,m,v,v,v,d,x,x,x,x
+- x,d,v,m,m,v,v,d,x,x,x,x
+- x,d,v,m,v,v,d,x,x,x,x,x
+- x,x,d,v,v,d,x,x,x,x,x,x
+- x,x,d,v,d,x,x,x,x,x,x,x
+- x,x,x,d,x,x,x,x,x,x,x,x
