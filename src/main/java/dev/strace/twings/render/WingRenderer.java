@@ -37,7 +37,7 @@ public final class WingRenderer {
     }
 
     /** Flap/rotation state supplied by the engine; may be null (previews of non-animated wings). */
-    public record AnimSnapshot(int flap, int rotationStep) {
+    public record AnimSnapshot(double flap, double rotationStep) {
     }
 
     public static void drawOnPlayer(Wing w, Player p, AnimSnapshot anim, Settings settings, MovementTracker tracker) {
@@ -58,8 +58,8 @@ public final class WingRenderer {
         }
 
         // 2.x added the flap value to both angle terms -> effectively 2x
-        int flap2 = (w.animated() && w.mirror() && anim != null) ? 2 * anim.flap() : 0;
-        int totalAdd = w.degreeAddition() + w.sneakAddition() + flap2;
+        double flap2 = (w.animated() && w.mirror() && anim != null) ? 2 * anim.flap() : 0;
+        double totalAdd = w.degreeAddition() + w.sneakAddition() + flap2;
 
         draw(w, world, l.getX(), l.getY(), l.getZ(), yaw, space, baseDY, totalAdd, anim, settings);
     }
@@ -74,7 +74,7 @@ public final class WingRenderer {
     }
 
     private static void draw(Wing w, World world, double px, double py, double pz, double yaw,
-                             double space, double baseDY, int totalAdd, AnimSnapshot anim, Settings settings) {
+                             double space, double baseDY, double totalAdd, AnimSnapshot anim, Settings settings) {
         // wing origin, moved behind the player (horizontal facing * cos 45°, legacy pitch trick)
         double yawRad = Math.toRadians(yaw);
         double ox = px - (-Math.sin(yawRad) * COS_45) * w.moveback();

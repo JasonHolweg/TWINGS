@@ -37,6 +37,10 @@ public final class Wing {
     private final double moveback;
     private final double moveup;
     private final double spacing;
+    /** Ticks between redraws for this wing; 0 = inherit the global update rate. */
+    private final int redrawTicks;
+    /** Flap/rotation speed multiplier (1.0 = default). */
+    private final double animationSpeed;
     private final List<String> patternLore;
     private final List<Cell> cells;
     /**
@@ -65,6 +69,8 @@ public final class Wing {
         this.moveback = b.moveback;
         this.moveup = b.moveup;
         this.spacing = b.spacing;
+        this.redrawTicks = b.redrawTicks;
+        this.animationSpeed = b.animationSpeed;
         this.patternLore = List.copyOf(b.patternLore);
         this.cells = List.copyOf(b.cells);
         this.geometryCols = b.geometryCols;
@@ -101,6 +107,9 @@ public final class Wing {
         b.moveup = cfg.getDouble("moveup");
         b.spacing = cfg.getDouble("spacing");
         if (b.spacing == 0) b.spacing = 0.07;
+        b.redrawTicks = Math.max(0, cfg.getInt("updaterate"));
+        double speed = cfg.contains("animationspeed") ? cfg.getDouble("animationspeed") : 1.0;
+        b.animationSpeed = Math.max(0.05, Math.min(10.0, speed));
 
         List<String> exclude = cfg.getStringList("exclude");
 
@@ -164,6 +173,8 @@ public final class Wing {
         double moveback;
         double moveup;
         double spacing;
+        int redrawTicks;
+        double animationSpeed = 1.0;
         int geometryCols;
         final List<String> patternLore = new ArrayList<>();
         final List<Cell> cells = new ArrayList<>();
@@ -243,6 +254,15 @@ public final class Wing {
 
     public double spacing() {
         return spacing;
+    }
+
+    /** Ticks between redraws; 0 means inherit the global update rate. */
+    public int redrawTicks() {
+        return redrawTicks;
+    }
+
+    public double animationSpeed() {
+        return animationSpeed;
     }
 
     /** Raw pattern rows as written in the file (for GUI lore). */

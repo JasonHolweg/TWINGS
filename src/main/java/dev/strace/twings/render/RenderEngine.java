@@ -23,16 +23,16 @@ import java.util.Random;
 public final class RenderEngine {
 
     private static final class AnimState {
-        int flap;
+        double flap;
         boolean plus = true;
-        int rotCounter;
-        int rotStep;
+        double rotStep;
     }
 
     private final Main plugin;
     private final Random random = new Random();
     private final Map<String, AnimState> anim = new HashMap<>();
     private BukkitTask task;
+    private long engineTick;
     private String editWingId;
     private long editStartedMs;
     private long lastEditReloadMs;
@@ -43,8 +43,10 @@ public final class RenderEngine {
 
     public void start() {
         stop();
-        int rate = plugin.settings().updateRate();
-        task = Bukkit.getScheduler().runTaskTimer(plugin, () -> tick(rate), 1, rate);
+        // Runs every tick; each wing is drawn only every N ticks (its own
+        // redraw rate, defaulting to the global update rate), and its
+        // animation advances every tick scaled by its animation speed.
+        task = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 1, 1);
     }
 
     public void stop() {
@@ -65,9 +67,10 @@ public final class RenderEngine {
         this.editWingId = null;
     }
 
-    private void tick(int rate) {
+    private void tick() {
         long now = System.currentTimeMillis();
-        advanceAnimations(rate);
+        engineTick++;
+        advanceAnimations();
         handleEditMode(now);
         plugin.timedEquips().tick(now);
 
@@ -76,13 +79,13 @@ public final class RenderEngine {
             if (!ids.isEmpty()) {
                 for (String id : ids) {
                     Wing wing = plugin.wings().get(id);
-                    if (wing != null) {
+                    if (wing != null && dueThisTick(wing)) {
                         WingRenderer.drawOnPlayer(wing, p, snapshot(wing), plugin.settings(), plugin.movement());
                     }
                 }
             } else if (plugin.settings().showWithPerms()) {
                 Wing auto = autoWing(p);
-                if (auto != null) {
+                if (auto != null && dueThisTick(auto)) {
                     WingRenderer.drawOnPlayer(auto, p, snapshot(auto), plugin.settings(), plugin.movement());
                 }
             }
@@ -90,7 +93,7 @@ public final class RenderEngine {
 
         for (var entry : plugin.previews().all().entrySet()) {
             Wing wing = plugin.wings().get(entry.getKey());
-            if (wing == null) continue;
+            if (wing == null || !dueThisTick(wing)) continue;
             Location loc = entry.getValue().resolve();
             if (loc != null) {
                 WingRenderer.drawAtLocation(wing, loc, snapshot(wing), plugin.settings());
@@ -98,11 +101,19 @@ public final class RenderEngine {
         }
     }
 
+    /** Whether this wing should be drawn on the current engine tick. */
+    private boolean dueThisTick(Wing wing) {
+        int every = wing.redrawTicks() > 0 ? wing.redrawTicks() : plugin.settings().updateRate();
+        if (every < 1) every = 1;
+        return engineTick % every == 0;
+    }
+
     /**
-     * Animation steps are advanced once per server tick worth of updates,
-     * so the visible flap/rotation speed is independent of the update rate.
+     * Advances every animated wing's flap/rotation once per tick, scaled by
+     * the wing's animation speed. Runs every tick regardless of redraw rate,
+     * so the flap position is smooth whenever the wing is actually drawn.
      */
-    private void advanceAnimations(int rate) {
+    private void advanceAnimations() {
         for (Wing wing : plugin.wings().all()) {
             if (!wing.animated()) continue;
             AnimState st = anim.computeIfAbsent(wing.idLower(), k -> {
@@ -110,21 +121,21 @@ public final class RenderEngine {
                 if (!wing.mirror()) s.rotStep = random.nextInt(20);
                 return s;
             });
-            for (int i = 0; i < rate; i++) {
-                if (wing.mirror()) {
-                    // legacy ping-pong 0..32 in steps of 2
-                    if (st.flap <= 30 && st.plus) st.flap += 2;
-                    else st.plus = false;
-                    if (st.flap > 0 && !st.plus) st.flap -= 2;
-                    else st.plus = true;
+            double speed = wing.animationSpeed();
+            if (wing.mirror()) {
+                // ping-pong 0..32; +2 per tick at speed 1
+                double delta = 2 * speed;
+                if (st.plus) {
+                    st.flap += delta;
+                    if (st.flap >= 32) { st.flap = 32; st.plus = false; }
                 } else {
-                    st.rotCounter++;
-                    if (st.rotStep >= 300) {
-                        st.rotStep = 0;
-                        st.rotCounter = 0;
-                    }
-                    if (st.rotCounter % 5 == 0) st.rotStep++;
+                    st.flap -= delta;
+                    if (st.flap <= 0) { st.flap = 0; st.plus = true; }
                 }
+            } else {
+                // +1 per 5 ticks at speed 1; wraps at 300
+                st.rotStep += speed / 5.0;
+                if (st.rotStep >= 300) st.rotStep -= 300;
             }
         }
     }
