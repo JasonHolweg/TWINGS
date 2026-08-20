@@ -88,6 +88,7 @@ try {
         creator VARCHAR(48) NOT NULL,
         description VARCHAR(320) NOT NULL,
         yaml TEXT NOT NULL,
+        content_hash VARCHAR(64) NOT NULL DEFAULT \'\',
         downloads INTEGER NOT NULL DEFAULT 0,
         created BIGINT NOT NULL,
         ip_hash VARCHAR(64) NOT NULL
@@ -215,9 +216,22 @@ function publish(PDO $pdo, array $config): never {
         if (strlen($line) > MAX_LINE_CHARS) fail(400, 'bad_yaml');
     }
 
-    // rate limit: per client, plus a global backstop that survives IP spoofing
     $ipHash = clientIpHash($config);
     $now = time();
+
+    // Idempotent publish: if this client already published identical content,
+    // return the existing wing instead of creating a duplicate. This makes
+    // repeated clicks on the publish button harmless and does not consume the
+    // rate limit.
+    $contentHash = hash('sha256', $name . "\0" . $creator . "\0" . $description . "\0" . $yaml);
+    $st = $pdo->prepare('SELECT id FROM wings WHERE ip_hash = ? AND content_hash = ? LIMIT 1');
+    $st->execute([$ipHash, $contentHash]);
+    $existing = $st->fetch();
+    if ($existing) {
+        ok(['id' => $existing['id'], 'command' => '/twings install ' . $existing['id'], 'duplicate' => true]);
+    }
+
+    // rate limit: per client, plus a global backstop that survives IP spoofing
     $pdo->prepare('DELETE FROM publishes WHERE ts < ?')->execute([$now - 86400]);
     $st = $pdo->prepare('SELECT COUNT(*) AS n FROM publishes WHERE ip_hash = ?');
     $st->execute([$ipHash]);
@@ -233,9 +247,9 @@ function publish(PDO $pdo, array $config): never {
         $id = wingId();
     }
 
-    $pdo->prepare('INSERT INTO wings (id, name, slug, creator, description, yaml, downloads, created, ip_hash)
-                   VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)')
-        ->execute([$id, $name, slugify($name), $creator, $description, $yaml, $now, $ipHash]);
+    $pdo->prepare('INSERT INTO wings (id, name, slug, creator, description, yaml, content_hash, downloads, created, ip_hash)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)')
+        ->execute([$id, $name, slugify($name), $creator, $description, $yaml, $contentHash, $now, $ipHash]);
     $pdo->prepare('INSERT INTO publishes (ip_hash, ts) VALUES (?, ?)')->execute([$ipHash, $now]);
 
     ok(['id' => $id, 'command' => '/twings install ' . $id]);

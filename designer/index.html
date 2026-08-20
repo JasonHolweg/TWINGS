@@ -70,15 +70,33 @@
           <button class="switch" id="animSwitch" role="switch" aria-checked="true"></button>
         </div>
       </div>
+
+      <div class="size-controls">
+        <span class="size-label" data-i18n="canvasSize">Größe</span>
+        <div class="stepper">
+          <button class="btn btn-ghost btn-icon" data-size="w" data-d="-1" title="−">−</button>
+          <span class="stepper-val"><span id="gridWVal"></span> <span data-i18n="wide">breit</span></span>
+          <button class="btn btn-ghost btn-icon" data-size="w" data-d="1" title="+">+</button>
+        </div>
+        <div class="stepper">
+          <button class="btn btn-ghost btn-icon" data-size="h" data-d="-1" title="−">−</button>
+          <span class="stepper-val"><span id="gridHVal"></span> <span data-i18n="tall">hoch</span></span>
+          <button class="btn btn-ghost btn-icon" data-size="h" data-d="1" title="+">+</button>
+        </div>
+      </div>
     </section>
 
     <section class="panel">
       <div class="panel-head"><h2 class="panel-title" data-i18n="settings">Einstellungen</h2></div>
       <div class="sliders">
         <div class="slider"><label><span data-i18n="sAngle">Flügel-Winkel</span><output id="degVal"></output></label>
-          <input type="range" id="deg" min="0" max="80" step="1"></div>
+          <input type="range" id="deg" min="-60" max="80" step="1"></div>
         <div class="slider"><label><span data-i18n="sTilt">Neigung</span><output id="tiltVal"></output></label>
           <input type="range" id="tilt" min="-45" max="60" step="1"></div>
+        <div class="slider"><label><span data-i18n="sSneak">Schleich-Winkel</span><output id="sneakAddVal"></output></label>
+          <input type="range" id="sneakAdd" min="-45" max="45" step="1"></div>
+        <div class="slider"><label><span data-i18n="sRotation">Rotation</span><output id="rotationVal"></output></label>
+          <input type="range" id="rotation" min="0" max="90" step="1"></div>
         <div class="slider"><label><span data-i18n="sSpacing">Größe</span><output id="spacingVal"></output></label>
           <input type="range" id="spacing" min="0.03" max="0.14" step="0.005"></div>
         <div class="slider"><label><span data-i18n="sUp">Höhe</span><output id="moveupVal"></output></label>
@@ -86,6 +104,17 @@
         <div class="slider"><label><span data-i18n="sBack">Abstand zum Rücken</span><output id="movebackVal"></output></label>
           <input type="range" id="moveback" min="0" max="1.5" step="0.05"></div>
       </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2 class="panel-title" data-i18n="motion">Bewegung</h2></div>
+      <div class="sliders">
+        <div class="slider"><label><span data-i18n="sAnimSpeed">Animations-Tempo</span><output id="animSpeedVal"></output></label>
+          <input type="range" id="animSpeed" min="0.25" max="3" step="0.05"></div>
+        <div class="slider"><label><span data-i18n="sRespawn">Partikel-Rate</span><output id="respawnRateVal"></output></label>
+          <input type="range" id="respawnRate" min="1" max="10" step="1"></div>
+      </div>
+      <p class="hint" data-i18n="respawnHint" style="margin:10px 0 0;font-size:12px;color:var(--text-3)">Partikel-Rate: niedrig = flüssig/dicht, hoch = pulsierend.</p>
     </section>
 
     <section class="panel">
@@ -120,6 +149,8 @@
         <input type="text" id="wingName" maxlength="40" data-i18n-ph="namePh" placeholder="Drachenflügel"></div>
       <div class="field"><span data-i18n="creatorLabel">Ersteller</span>
         <input type="text" id="creatorName" maxlength="30" data-i18n-ph="creatorPh" placeholder="Dein Name"></div>
+      <div class="field"><span data-i18n="materialLabel">Menü-Item</span>
+        <select id="wingMaterial"></select></div>
       <div class="field"><span data-i18n="descLabel">Beschreibung (optional)</span>
         <textarea id="wingDesc" maxlength="300" rows="2" data-i18n-ph="descPh" placeholder="Erzähl etwas über deine Flügel …"></textarea></div>
       <div class="actions">
@@ -193,12 +224,16 @@ setPageStrings({
     editor: "Editor", colors: "Farben", particles: "Minecraft-Partikel",
     mirror: "Spiegeln", anim: "Animation", settings: "Einstellungen",
     sAngle: "Flügel-Winkel", sTilt: "Neigung", sSpacing: "Größe", sUp: "Höhe", sBack: "Abstand zum Rücken",
+    sSneak: "Schleich-Winkel", sRotation: "Rotation",
+    motion: "Bewegung", sAnimSpeed: "Animations-Tempo", sRespawn: "Partikel-Rate",
+    respawnHint: "Partikel-Rate: niedrig = flüssig/dicht, hoch = pulsierend.",
+    canvasSize: "Größe", wide: "breit", tall: "hoch", materialLabel: "Menü-Item",
     templates: "Vorlagen", preview: "Vorschau", dragHint: "Ziehen zum Drehen",
     sneak: "Schleichen", spin: "Drehen",
     publish: "Veröffentlichen", nameLabel: "Name", creatorLabel: "Ersteller",
     descLabel: "Beschreibung (optional)",
     namePh: "Drachenflügel", creatorPh: "Dein Name", descPh: "Erzähl etwas über deine Flügel …",
-    publishBtn: "In der Bibliothek veröffentlichen", publishing: "Wird veröffentlicht …",
+    publishBtn: "In der Bibliothek veröffentlichen", publishing: "Wird veröffentlicht …", published: "Veröffentlicht ✓",
     export: "Datei speichern", import: "Datei öffnen",
     helpTitle: "So funktioniert’s",
     help1: "Wähle eine Farbe oder einen Minecraft-Partikel und male dein Muster. Mit „Spiegeln“ bleiben beide Flügel symmetrisch.",
@@ -222,12 +257,16 @@ setPageStrings({
     editor: "Editor", colors: "Colors", particles: "Minecraft particles",
     mirror: "Mirror", anim: "Animation", settings: "Settings",
     sAngle: "Wing angle", sTilt: "Tilt", sSpacing: "Size", sUp: "Height", sBack: "Distance from back",
+    sSneak: "Sneak angle", sRotation: "Rotation",
+    motion: "Motion", sAnimSpeed: "Animation speed", sRespawn: "Particle rate",
+    respawnHint: "Particle rate: low = smooth/dense, high = pulsing.",
+    canvasSize: "Size", wide: "wide", tall: "tall", materialLabel: "Menu item",
     templates: "Templates", preview: "Preview", dragHint: "Drag to rotate",
     sneak: "Sneak", spin: "Rotate",
     publish: "Publish", nameLabel: "Name", creatorLabel: "Creator",
     descLabel: "Description (optional)",
     namePh: "Dragon Wings", creatorPh: "Your name", descPh: "Tell something about your wings …",
-    publishBtn: "Publish to the library", publishing: "Publishing …",
+    publishBtn: "Publish to the library", publishing: "Publishing …", published: "Published ✓",
     export: "Save file", import: "Open file",
     helpTitle: "How it works",
     help1: "Pick a color or a Minecraft particle and paint your pattern. “Mirror” keeps both wings symmetric.",
@@ -260,8 +299,12 @@ let state = {
   mirror: true, animated: true,
   deg: 10, tilt: 10, spacing: 0.07, moveup: 0, moveback: 0,
   sneakAdd: 0, rotation: 0, geometryCols: null,
+  animSpeed: 1, respawnRate: 3, material: "ELYTRA",
   name: "", creator: "",
 };
+const MATERIALS = ["ELYTRA", "FEATHER", "MAP", "COOKIE", "NETHER_STAR", "FIRE_CHARGE",
+  "BLAZE_POWDER", "GHAST_TEAR", "PHANTOM_MEMBRANE", "DRAGON_BREATH", "AMETHYST_SHARD",
+  "GLOW_INK_SAC", "PAPER", "BONE", "ENDER_PEARL", "PRISMARINE_CRYSTALS"];
 let brush = { t: "c", hex: "#ffffff" };
 let undoStack = [], redoStack = [];
 let sneaking = false, autoSpin = true;
@@ -270,7 +313,7 @@ function cellAt(c, r) { return state.cells[r * state.w + c] ?? null; }
 function setCell(c, r, v) { if (c >= 0 && c < state.w && r >= 0 && r < state.h) state.cells[r * state.w + c] = v; }
 // Snapshot the full editable state (not just cells) so undo restores the mirror
 // flag and settings that width-changing operations like the mirror toggle mutate.
-const SNAPSHOT_KEYS = ["w", "h", "mirror", "animated", "deg", "tilt", "spacing", "moveup", "moveback", "sneakAdd", "rotation", "geometryCols"];
+const SNAPSHOT_KEYS = ["w", "h", "mirror", "animated", "deg", "tilt", "spacing", "moveup", "moveback", "sneakAdd", "rotation", "geometryCols", "animSpeed", "respawnRate", "material"];
 function snapshot() {
   const s = { cells: state.cells };
   for (const k of SNAPSHOT_KEYS) s[k] = state[k];
@@ -286,9 +329,13 @@ function restore(snap) {
   const s = JSON.parse(snap);
   state.cells = s.cells;
   for (const k of SNAPSHOT_KEYS) if (k in s) state[k] = s[k];
+  if (typeof resetPuffs === "function") resetPuffs();
   syncControls(); drawGrid(); persist();
 }
-function persist() { store.set("twings.design", JSON.stringify(state)); }
+function persist() {
+  store.set("twings.design", JSON.stringify(state));
+  if (typeof markDirty === "function") markDirty(); // re-enable publish after any edit
+}
 function loadPersisted() {
   try {
     const s = JSON.parse(store.get("twings.design"));
@@ -420,20 +467,43 @@ const pv = document.getElementById("preview");
 const ptx = pv.getContext("2d");
 let cam = { yaw: 0.5, pitch: 0.28, dist: 4.6 };
 let flap = { v: 0, plus: true };
-let rot = { counter: 0, step: Math.floor(Math.random() * 20) };
+let rot = { step: Math.random() * 20 };
 const COS45 = 0.7071067811865476;
 const ROTATION_SPEED = 0.2;
 
+// In-game particles persist for a moment and fade. The preview mirrors that:
+// a "puff" of particle positions is emitted at the wing's respawn cadence and
+// fades over its lifetime, so a slow respawn rate visibly pulses and a fast one
+// is continuous — and flapping puffs at different phases leave a motion trail.
+let puffs = [];
+let previewNowMs = 0;
+let respawnCounter = 0;
+const PUFF_LIFE_MS = 560;
+const MAX_PUFFS = 5;
+
 function stepAnimationTick() {
+  // advance flap/rotation by the wing's animation speed, matching the plugin
+  const speed = state.animSpeed || 1;
   if (state.mirror) {
-    if (flap.v <= 30 && flap.plus) flap.v += 2; else flap.plus = false;
-    if (flap.v > 0 && !flap.plus) flap.v -= 2; else flap.plus = true;
+    const d = 2 * speed;
+    if (flap.plus) { flap.v += d; if (flap.v >= 32) { flap.v = 32; flap.plus = false; } }
+    else { flap.v -= d; if (flap.v <= 0) { flap.v = 0; flap.plus = true; } }
   } else {
-    rot.counter++;
-    if (rot.step >= 300) { rot.step = 0; rot.counter = 0; }
-    if (rot.counter % 5 === 0) rot.step++;
+    rot.step += speed / 5;
+    if (rot.step >= 300) rot.step -= 300;
   }
+  // emit a new puff every `respawnRate` ticks
+  if (++respawnCounter >= Math.max(1, Math.round(state.respawnRate || 3))) {
+    respawnCounter = 0;
+    const parts = computeParticles();
+    puffs.push({ parts, born: previewNowMs });
+    // cap overlapping puffs so huge/dense wings keep a bounded particle budget
+    const cap = Math.max(2, Math.min(MAX_PUFFS, Math.floor(3500 / Math.max(1, parts.length))));
+    while (puffs.length > cap) puffs.shift();
+  }
+  puffs = puffs.filter(pf => previewNowMs - pf.born < PUFF_LIFE_MS);
 }
+function resetPuffs() { puffs = []; respawnCounter = 0; }
 
 function computeParticles() {
   const out = [];
@@ -542,9 +612,14 @@ function renderPreview() {
       drawables.push({ z: pts.reduce((a, p) => a + p.z, 0) / 4, kind: "face", pts, face });
     }
   }
-  for (const p of computeParticles()) {
-    const pr = project(p, W, H);
-    if (pr) drawables.push({ z: pr.z, kind: "sprite", pr, p });
+  // draw particles from every live puff, faded by age (older = fainter)
+  for (const puff of puffs) {
+    const alpha = Math.max(0, 1 - (previewNowMs - puff.born) / PUFF_LIFE_MS);
+    if (alpha <= 0.01) continue;
+    for (const p of puff.parts) {
+      const pr = project(p, W, H);
+      if (pr) drawables.push({ z: pr.z, kind: "sprite", pr, p, alpha });
+    }
   }
   drawables.sort((a, b) => b.z - a.z);
 
@@ -564,9 +639,12 @@ function renderPreview() {
       const sprite = Textures.forCell(d.p.cell);
       if (!sprite) continue;
       const tw = 0.8 + 0.2 * Math.sin(frameTick * 0.3 + d.p.x * 13.7 + d.p.y * 7.1);
-      const size = Math.max(3, d.pr.f * 0.055) * tw * (d.p.cell.t === "s" ? 1.35 : 1);
+      // per-particle true in-game size (hearts are large, dust is small)
+      const size = Math.max(3, d.pr.f * 0.055) * tw * cellScale(d.p.cell);
       ptx.globalCompositeOperation = "lighter";
+      ptx.globalAlpha = d.alpha;
       ptx.drawImage(sprite, d.pr.sx - size / 2, d.pr.sy - size / 2, size, size);
+      ptx.globalAlpha = 1;
       ptx.globalCompositeOperation = "source-over";
     }
   }
@@ -585,7 +663,12 @@ pv.addEventListener("wheel", ev => { ev.preventDefault(); cam.dist = Math.max(2.
 
 let lastAnim = 0;
 function loop(ts) {
-  if (ts - lastAnim >= 50) { stepAnimationTick(); lastAnim = ts; }
+  previewNowMs = ts;
+  if (!lastAnim) lastAnim = ts;
+  // fixed 50ms (20 Hz) animation steps, catching up after a lag but capped
+  let steps = 0;
+  while (ts - lastAnim >= 50 && steps < 4) { stepAnimationTick(); lastAnim += 50; steps++; }
+  if (ts - lastAnim >= 50) lastAnim = ts; // fell too far behind; resync
   if (autoSpin && !dragging) cam.yaw += 0.004;
   frameTick++;
   renderPreview();
@@ -608,9 +691,13 @@ function applyGridData(data) {
     state.deg = data.meta.deg; state.tilt = data.meta.tilt;
     state.sneakAdd = data.meta.sneakAdd || 0; state.rotation = data.meta.rotation || 0;
     state.spacing = data.meta.spacing; state.moveup = data.meta.moveup; state.moveback = data.meta.moveback;
+    state.animSpeed = data.meta.animSpeed || 1; state.respawnRate = data.meta.respawnRate || 3;
+    state.material = data.meta.material || "ELYTRA";
     if (data.meta.name) state.name = data.meta.name;
     if (data.meta.creator) state.creator = data.meta.creator;
   }
+  resetPuffs();
+  buildMaterialSelect();
   syncControls(); drawGrid(); persist();
 }
 function importWingYamlText(text) {
@@ -683,6 +770,8 @@ function loadTemplate(tpl) {
   state.deg = tpl.deg; state.tilt = tpl.tilt; state.spacing = tpl.spacing;
   state.moveup = tpl.moveup; state.moveback = 0;
   state.sneakAdd = 0; state.rotation = 0;
+  state.animSpeed = 1; state.respawnRate = 3; state.material = "ELYTRA";
+  resetPuffs();
   syncControls(); drawGrid(); persist();
 }
 function buildTemplates() {
@@ -702,7 +791,26 @@ function buildTemplates() {
 }
 
 /* ---------------- publish ---------------- */
+// Once a design is published, the button stays disabled until the design
+// changes again — so repeated clicks can't flood the library with duplicates.
+// The server also dedupes identical content per client as a second line.
+let publishClean = false;
+function markPublished() {
+  publishClean = true;
+  const btn = document.getElementById("publishBtn");
+  btn.disabled = true;
+  btn.querySelector("span").textContent = t("published");
+}
+function markDirty() {
+  if (!publishClean) return;
+  publishClean = false;
+  const btn = document.getElementById("publishBtn");
+  btn.disabled = false;
+  btn.querySelector("span").textContent = t("publishBtn");
+}
+
 async function publish() {
+  if (publishClean) return;
   state.name = document.getElementById("wingName").value.trim();
   state.creator = document.getElementById("creatorName").value.trim();
   const description = document.getElementById("wingDesc").value.trim();
@@ -711,6 +819,7 @@ async function publish() {
   const btn = document.getElementById("publishBtn");
   btn.disabled = true;
   btn.querySelector("span").textContent = t("publishing");
+  let ok = false;
   try {
     const res = await api.publish({
       name: state.name,
@@ -719,6 +828,7 @@ async function publish() {
       yaml: yamlFromState(state),
     });
     if (res && res.ok) {
+      ok = true;
       document.getElementById("cmdText").textContent = installCommand(res.id);
       document.getElementById("publishDialog").showModal();
     } else if (res && res.error === "rate_limited") {
@@ -729,31 +839,88 @@ async function publish() {
   } catch (e) {
     toast(t("publishFailed"), "err");
   } finally {
-    btn.disabled = false;
-    btn.querySelector("span").textContent = t("publishBtn");
+    if (ok) {
+      markPublished();
+    } else {
+      btn.disabled = false;
+      btn.querySelector("span").textContent = t("publishBtn");
+    }
   }
 }
 
 /* ---------------- controls ---------------- */
 function syncControls() {
   for (const [id, key, fmt] of [["deg", "deg", v => v + "°"], ["tilt", "tilt", v => v + "°"],
-      ["spacing", "spacing", v => v.toFixed(3)], ["moveup", "moveup", v => v.toFixed(2)], ["moveback", "moveback", v => v.toFixed(2)]]) {
+      ["sneakAdd", "sneakAdd", v => v + "°"], ["rotation", "rotation", v => v + "°"],
+      ["spacing", "spacing", v => v.toFixed(3)], ["moveup", "moveup", v => v.toFixed(2)],
+      ["moveback", "moveback", v => v.toFixed(2)],
+      ["animSpeed", "animSpeed", v => v.toFixed(2) + "×"], ["respawnRate", "respawnRate", v => v + "t"]]) {
     document.getElementById(id).value = state[key];
     document.getElementById(id + "Val").textContent = fmt(state[key]);
   }
+  document.getElementById("gridWVal").textContent = state.w;
+  document.getElementById("gridHVal").textContent = state.h;
   document.getElementById("mirrorSwitch").setAttribute("aria-checked", state.mirror);
   document.getElementById("animSwitch").setAttribute("aria-checked", state.animated);
   document.getElementById("wingName").value = state.name;
   document.getElementById("creatorName").value = state.creator;
+  document.getElementById("wingMaterial").value = state.material;
+}
+
+/** Resizes the grid, preserving overlapping cells (top-left anchored). */
+function resizeGrid(newW, newH) {
+  newW = Math.max(1, Math.min(40, newW));
+  newH = Math.max(1, Math.min(48, newH));
+  if (newW === state.w && newH === state.h) return;
+  pushUndo();
+  const cells = new Array(newW * newH).fill(null);
+  for (let r = 0; r < Math.min(newH, state.h); r++) {
+    for (let c = 0; c < Math.min(newW, state.w); c++) {
+      cells[r * newW + c] = cellAt(c, r);
+    }
+  }
+  state.w = newW; state.h = newH; state.cells = cells;
+  resetPuffs();
+  syncControls(); drawGrid(); persist();
+}
+
+function buildMaterialSelect() {
+  const sel = document.getElementById("wingMaterial");
+  sel.innerHTML = "";
+  for (const m of MATERIALS) {
+    const o = document.createElement("option");
+    o.value = m;
+    o.textContent = m.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
+    sel.appendChild(o);
+  }
+  // include a custom material the file may carry that isn't in the list
+  if (state.material && !MATERIALS.includes(state.material)) {
+    const o = document.createElement("option");
+    o.value = state.material; o.textContent = state.material;
+    sel.appendChild(o);
+  }
+  sel.value = state.material;
 }
 
 function wire() {
-  for (const [id, key] of [["deg", "deg"], ["tilt", "tilt"], ["spacing", "spacing"], ["moveup", "moveup"], ["moveback", "moveback"]]) {
+  for (const [id, key] of [["deg", "deg"], ["tilt", "tilt"], ["sneakAdd", "sneakAdd"],
+      ["rotation", "rotation"], ["spacing", "spacing"], ["moveup", "moveup"], ["moveback", "moveback"],
+      ["animSpeed", "animSpeed"], ["respawnRate", "respawnRate"]]) {
     document.getElementById(id).addEventListener("input", ev => {
       state[key] = parseFloat(ev.target.value);
       syncControls(); persist();
     });
   }
+  document.querySelectorAll(".size-controls [data-size]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const d = parseInt(btn.dataset.d);
+      if (btn.dataset.size === "w") resizeGrid(state.w + d, state.h);
+      else resizeGrid(state.w, state.h + d);
+    });
+  });
+  document.getElementById("wingMaterial").addEventListener("change", ev => {
+    state.material = ev.target.value; persist();
+  });
   document.getElementById("mirrorSwitch").onclick = () => {
     pushUndo();
     state.mirror = !state.mirror;
@@ -773,10 +940,11 @@ function wire() {
       }
       state.w = w2; state.cells = cells;
     }
+    resetPuffs();
     syncControls(); drawGrid(); persist();
   };
   document.getElementById("animSwitch").onclick = () => {
-    state.animated = !state.animated; syncControls(); persist();
+    state.animated = !state.animated; resetPuffs(); syncControls(); persist();
   };
   document.getElementById("undoBtn").onclick = () => {
     if (!undoStack.length) return;
@@ -797,6 +965,7 @@ function wire() {
   document.getElementById("clearBtn").onclick = () => {
     pushUndo();
     state.cells = new Array(state.w * state.h).fill(null);
+    resetPuffs();
     drawGrid(); persist(); toast(t("cleared"));
   };
   document.getElementById("sneakBtn").onclick = ev => {
@@ -807,6 +976,7 @@ function wire() {
   };
   document.getElementById("wingName").addEventListener("input", ev => { state.name = ev.target.value; persist(); });
   document.getElementById("creatorName").addEventListener("input", ev => { state.creator = ev.target.value; persist(); });
+  document.getElementById("wingDesc").addEventListener("input", markDirty);
   document.getElementById("publishBtn").onclick = publish;
   document.getElementById("exportBtn").onclick = () => {
     state.name = document.getElementById("wingName").value.trim();
@@ -848,6 +1018,7 @@ Textures.load().then(async () => {
   initNav();
   applyLang();
   buildPalettes();
+  buildMaterialSelect();
   buildTemplates();
   wire();
   syncControls();

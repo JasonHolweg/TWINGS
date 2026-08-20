@@ -8,17 +8,23 @@
 // Special (non-dust) particles. tex = key in TEX, tint = null (texture is
 // already colored) or a hex color multiplied onto the texture — the same
 // way the game tints e.g. glint green for HAPPY_VILLAGER.
+// `scale` is the particle's real in-game size relative to a dust pixel (1.0).
+// HEART is genuinely huge in Minecraft and its size cannot be reduced via the
+// API, so the preview shows it large — what you see is what you get.
 const SPECIALS = {
-  FL: { p: "FLAME",           tex: "flame",    tint: null,      c: "#ff9a2c" },
-  SO: { p: "SOUL_FIRE_FLAME", tex: "soul",     tint: null,      c: "#4fd8ff" },
-  ER: { p: "END_ROD",         tex: "glitter",  tint: null,      c: "#f4eeff" },
-  HV: { p: "HAPPY_VILLAGER",  tex: "glint",    tint: "#4bd151", c: "#4bd151" },
-  EN: { p: "ENCHANT",         tex: "sga",      tint: null,      c: "#d9d9ff" },
-  HE: { p: "HEART",           tex: "heart",    tint: null,      c: "#ff5c8a" },
-  WI: { p: "WITCH",           tex: "spell",    tint: "#c24bff", c: "#c24bff" },
-  SN: { p: "SNOWFLAKE",       tex: "glitter2", tint: "#bfe6ff", c: "#bfe6ff" },
-  GL: { p: "GLOW",            tex: "glow",     tint: null,      c: "#6ef0d0" },
+  FL: { p: "FLAME",           tex: "flame",    tint: null,      c: "#ff9a2c", scale: 1.3 },
+  SO: { p: "SOUL_FIRE_FLAME", tex: "soul",     tint: null,      c: "#4fd8ff", scale: 1.3 },
+  ER: { p: "END_ROD",         tex: "glitter",  tint: null,      c: "#f4eeff", scale: 1.1 },
+  HV: { p: "HAPPY_VILLAGER",  tex: "glint",    tint: "#4bd151", c: "#4bd151", scale: 1.9 },
+  EN: { p: "ENCHANT",         tex: "sga",      tint: null,      c: "#d9d9ff", scale: 1.2 },
+  HE: { p: "HEART",           tex: "heart",    tint: null,      c: "#ff5c8a", scale: 3.0 },
+  WI: { p: "WITCH",           tex: "spell",    tint: "#c24bff", c: "#c24bff", scale: 1.6 },
+  SN: { p: "SNOWFLAKE",       tex: "glitter2", tint: "#bfe6ff", c: "#bfe6ff", scale: 1.2 },
+  GL: { p: "GLOW",            tex: "glow",     tint: null,      c: "#6ef0d0", scale: 1.4 },
 };
+function cellScale(cell) {
+  return (cell && cell.t === "s") ? (SPECIALS[cell.key]?.scale ?? 1.3) : 1.0;
+}
 const PARTICLE_TO_SPECIAL = Object.fromEntries(Object.entries(SPECIALS).map(([k, v]) => [v.p, k]));
 
 // pre-1.20.5 names found in old wing files (mirrors the plugin's ParticleAliases)
@@ -163,6 +169,9 @@ function gridFromParsed(parsed) {
       spacing: parseFloat(t.spacing) || 0.07,
       moveup: parseFloat(t.moveup) || 0,
       moveback: parseFloat(t.moveback) || 0,
+      animSpeed: parseFloat(t.animationspeed) || 1,
+      respawnRate: Math.max(1, parseInt(t.updaterate) || 3),
+      material: (t["Item.Material"] || "ELYTRA").toUpperCase(),
       name: stripColors(t["Item.Name"]),
       creator: t.creator || "",
     },
@@ -188,7 +197,7 @@ function yamlFromState(s) {
     lines.push(`  ${key}: '${SPECIALS[key].p}'`);
   }
   lines.push("Item:");
-  lines.push("  Material: ELYTRA");
+  lines.push(`  Material: ${(s.material || "ELYTRA").replace(/[^A-Z0-9_]/gi, "").toUpperCase() || "ELYTRA"}`);
   lines.push(`  Name: '&d${(s.name || "Wings").replace(/'/g, "")}'`);
   lines.push("permission: ''");
   lines.push(`creator: '${(s.creator || "TWINGS Designer").replace(/'/g, "")}'`);
@@ -203,6 +212,8 @@ function yamlFromState(s) {
   lines.push(`moveback: ${Math.round(s.moveback * 100) / 100}`);
   lines.push(`rotation: ${s.rotation || 0}`);
   lines.push(`spacing: ${s.spacing}`);
+  lines.push(`updaterate: ${Math.max(1, Math.round(s.respawnRate || 3))}`);
+  lines.push(`animationspeed: ${Math.round((s.animSpeed || 1) * 100) / 100}`);
   lines.push("category: wings");
   lines.push(`Animated: ${s.animated}`);
   lines.push("exclude:");
