@@ -1,0 +1,13 @@
+name: TWINGS
+author: Strace
+version: '${project.version}'
+main: dev.strace.twings.Main
+api-version: '1.21'
+description: Create your own particle wings - a simple yet powerful particle cosmetics plugin.
+website: https://www.spigotmc.org/resources/82088/
+
+commands:
+  wings:
+    description: Opens the TWINGS menu or runs a subcommand.
+    usage: /wings [equip|unequip|list|preview|edit|create|add|give|reload]
+    aliases: [twings, twing, wing]

@@ -1,0 +1,39 @@
+# TWINGS preset wing
+Particles:
+  g: 'DUST:94,224,138:0.8'
+  d: 'DUST:46,158,88:0.8'
+  y: 'DUST:166,227,78:0.8'
+  h: 'HAPPY_VILLAGER'
+Item:
+  Material: ELYTRA
+  Name: '&aNature Wings'
+permission: ''
+creator: 'TWINGS'
+DegreeAddition: 12
+SneakingDegreeAddition: 0
+ShowWhenRunning: false
+tilt: 8
+tiltbefore: false
+runtilt: 0
+mirrow: true
+moveup: 0
+moveback: 0
+rotation: 0
+spacing: 0.075
+category: wings
+Animated: true
+exclude:
+- x
+pattern:
+- h,x,x,x,x,x,x,x,x,x,x,x
+- x,g,g,x,x,x,x,x,x,x,x,x
+- g,y,y,g,x,x,x,x,x,x,x,x
+- g,y,d,y,g,x,x,x,x,x,x,x
+- g,y,d,y,d,g,x,x,x,x,x,x
+- x,g,y,d,y,d,g,x,x,x,x,x
+- x,g,y,d,d,y,d,g,x,x,x,x
+- x,x,g,y,d,d,y,g,x,x,x,x
+- x,x,g,y,d,y,g,x,x,x,x,x
+- x,x,x,g,y,g,x,x,x,h,x,x
+- x,x,x,g,g,x,x,x,x,x,x,x
+- x,x,x,x,g,x,x,x,x,x,x,x

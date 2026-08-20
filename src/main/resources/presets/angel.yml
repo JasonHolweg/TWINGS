@@ -1,0 +1,40 @@
+# TWINGS preset wing
+Particles:
+  w: 'DUST:255,255,255:0.8'
+  g: 'DUST:255,217,74:0.8'
+  s: 'END_ROD'
+Item:
+  Material: ELYTRA
+  Name: '&fAngel Wings'
+permission: ''
+creator: 'TWINGS'
+DegreeAddition: 14
+SneakingDegreeAddition: 0
+ShowWhenRunning: false
+tilt: 8
+tiltbefore: false
+runtilt: 0
+mirrow: true
+moveup: 0.1
+moveback: 0
+rotation: 0
+spacing: 0.075
+category: wings
+Animated: true
+exclude:
+- x
+pattern:
+- x,x,x,x,s,x,x,x,x,x,x,x
+- x,x,w,w,w,x,x,x,x,x,x,x
+- x,w,w,w,w,w,x,x,x,x,x,x
+- w,w,g,w,w,w,w,x,x,x,x,x
+- w,g,g,w,w,w,w,w,x,x,x,x
+- w,g,g,w,w,w,w,w,w,x,x,x
+- x,w,g,w,w,w,w,w,w,w,x,x
+- x,w,w,w,w,w,w,w,w,w,x,x
+- x,x,w,w,w,w,w,w,w,w,x,x
+- x,x,x,w,w,w,w,w,w,w,x,x
+- x,x,x,x,w,w,w,w,w,x,x,x
+- x,x,x,x,x,w,w,w,x,x,x,x
+- x,x,x,x,x,x,w,w,x,x,x,x
+- x,x,x,x,x,x,x,w,x,x,x,x

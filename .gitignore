@@ -1,8 +1,22 @@
-/.idea
-*.iml
+# Build output
 /target
 /bin
+
+# IDE
+/.idea
+*.iml
 /.settings
 .classpath
-.gitattributes
 .project
+
+# Local test server (Paper jar, worlds, logs, plugin data)
+/testserver
+
+# Designer: local dev database + generated config (never deploy these)
+/designer/data/
+
+# Working/planning docs — kept locally, not tracked
+/PLAN.md
+/CHANGELOG.md
+/docs/
+/designer/README.md

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TWINGS Bibliothek</title>
+<meta name="description" content="Browse and install community-made Minecraft particle wings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M12 20C12 20 13 10 22 4C22 4 21.5 12.5 16 16.5C13.5 18.3 12 20 12 20Z" fill="#7c6cff"/>
+      <path d="M12 20C12 20 11 10 2 4C2 4 2.5 12.5 8 16.5C10.5 18.3 12 20 12 20Z" fill="#5b4dd4"/>
+    </svg>
+    TWINGS
+  </a>
+  <div class="nav-tabs">
+    <a class="nav-tab" href="index.html" data-i18n="navDesigner">Designer</a>
+    <a class="nav-tab active" href="library.html" data-i18n="navLibrary">Bibliothek</a>
+  </div>
+  <div class="nav-right">
+    <div class="lang-switch">
+      <button class="lang-opt" data-lang="de">DE</button>
+      <button class="lang-opt" data-lang="en">EN</button>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="lib-head">
+    <h1 data-i18n="title">Bibliothek</h1>
+    <span class="sub" id="countLabel"></span>
+    <div class="lib-controls">
+      <input type="text" id="search" data-i18n-ph="searchPh" placeholder="Suchen …">
+      <select id="sort">
+        <option value="new" data-i18n="sortNew">Neueste</option>
+        <option value="popular" data-i18n="sortPopular">Beliebteste</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="lib-grid" id="libGrid"></div>
+
+  <div class="lib-more">
+    <button class="btn" id="moreBtn" hidden data-i18n="more">Mehr laden</button>
+  </div>
+</main>
+
+<footer class="footer">
+  <span>TWINGS</span>
+  <a href="index.html" data-i18n="footerDesign">Eigene Flügel gestalten</a>
+  <a href="https://www.spigotmc.org/resources/82088/" target="_blank" rel="noopener">SpigotMC</a>
+</footer>
+
+<script src="assets/textures.js"></script>
+<script src="assets/app.js"></script>
+<script>
+"use strict";
+/* TWINGS library — browse & install published wings. */
+
+setPageStrings({
+  de: {
+    title: "Bibliothek", searchPh: "Suchen …", sortNew: "Neueste", sortPopular: "Beliebteste",
+    more: "Mehr laden", installed: "Installationen",
+    empty: "Noch keine Flügel veröffentlicht. Sei die erste Person!",
+    emptySearch: "Nichts gefunden.",
+    designFirst: "Flügel gestalten", footerDesign: "Eigene Flügel gestalten",
+    wings: "Flügel",
+  },
+  en: {
+    title: "Library", searchPh: "Search …", sortNew: "Newest", sortPopular: "Most popular",
+    more: "Load more", installed: "installs",
+    empty: "No wings published yet. Be the first!",
+    emptySearch: "Nothing found.",
+    designFirst: "Design wings", footerDesign: "Design your own wings",
+    wings: "wings",
+  },
+});
+
+const PAGE_SIZE = 24;
+let offset = 0, total = 0, currentQuery = "", currentSort = "new", loading = false;
+
+const gridEl = document.getElementById("libGrid");
+const moreBtn = document.getElementById("moreBtn");
+
+function fmtDate(ts) {
+  return new Date(ts * 1000).toLocaleDateString(LANG === "de" ? "de-DE" : "en-US",
+    { day: "numeric", month: "short", year: "numeric" });
+}
+
+function makeCard(w) {
+  const card = document.createElement("article");
+  card.className = "wing-card";
+
+  const thumb = document.createElement("canvas");
+  thumb.className = "wing-thumb";
+  card.appendChild(thumb);
+
+  const body = document.createElement("div");
+  body.className = "wing-body";
+
+  const name = document.createElement("h3");
+  name.className = "wing-name";
+  name.textContent = w.name;
+
+  const creator = document.createElement("div");
+  creator.className = "wing-creator";
+  creator.textContent = t("by") + " " + w.creator;
+
+  body.append(name, creator);
+
+  if (w.description) {
+    const desc = document.createElement("p");
+    desc.className = "wing-desc";
+    desc.textContent = w.description;
+    body.appendChild(desc);
+  }
+
+  const meta = document.createElement("div");
+  meta.className = "wing-meta";
+  meta.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>';
+  const metaText = document.createElement("span");
+  metaText.textContent = `${w.downloads} · ${fmtDate(w.created)}`;
+  meta.appendChild(metaText);
+  body.appendChild(meta);
+
+  const actions = document.createElement("div");
+  actions.className = "wing-actions";
+
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "btn btn-sm btn-primary";
+  copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span></span>';
+  copyBtn.querySelector("span").textContent = t("copyCommand");
+  copyBtn.onclick = async () => {
+    const ok = await copyText(installCommand(w.id));
+    if (ok) {
+      const span = copyBtn.querySelector("span");
+      span.textContent = t("copied");
+      setTimeout(() => { span.textContent = t("copyCommand"); }, 1600);
+    }
+  };
+
+  const openBtn = document.createElement("a");
+  openBtn.className = "btn btn-sm";
+  openBtn.href = "index.html?wing=" + encodeURIComponent(w.id);
+  openBtn.textContent = t("navDesigner");
+
+  actions.append(copyBtn, openBtn);
+  body.appendChild(actions);
+  card.appendChild(body);
+
+  // thumbnail render (after insertion so clientWidth is known)
+  requestAnimationFrame(() => {
+    const parsed = parseWingYaml(w.yaml);
+    const data = gridFromParsed(parsed);
+    if (data) renderPattern2D(thumb, data, { mirror: data.meta.mirror, pad: 14 });
+  });
+  return card;
+}
+
+let pendingReset = null; // a refresh requested while a fetch was in flight
+
+async function fetchPage(reset) {
+  if (loading) {
+    // Don't drop a search/sort/language change; remember the strongest request.
+    pendingReset = reset || pendingReset;
+    return;
+  }
+  loading = true;
+  if (reset) { offset = 0; gridEl.innerHTML = ""; }
+  // snapshot the query this request is for, to detect staleness on return
+  const reqQuery = currentQuery, reqSort = currentSort;
+  try {
+    const res = await api.list({ q: reqQuery, sort: reqSort, offset, limit: PAGE_SIZE });
+    if (!res || !res.ok) throw new Error("list failed");
+    // if the query changed while we waited, discard and let the pending run win
+    if (reqQuery !== currentQuery || reqSort !== currentSort) return;
+    total = res.total;
+    for (const w of res.wings) gridEl.appendChild(makeCard(w));
+    offset += res.wings.length;
+    moreBtn.hidden = offset >= total;
+    document.getElementById("countLabel").textContent = total > 0 ? `${total} ${t("wings")}` : "";
+    if (total === 0) {
+      const empty = document.createElement("div");
+      empty.className = "lib-empty";
+      const msg = document.createElement("p");
+      msg.textContent = currentQuery ? t("emptySearch") : t("empty");
+      empty.appendChild(msg);
+      if (!currentQuery) {
+        const cta = document.createElement("a");
+        cta.className = "btn btn-primary";
+        cta.href = "index.html";
+        cta.textContent = t("designFirst");
+        empty.appendChild(cta);
+      }
+      gridEl.appendChild(empty);
+    }
+  } catch (e) {
+    toast(t("loadError"), "err");
+  } finally {
+    loading = false;
+    if (pendingReset !== null) {
+      const r = pendingReset;
+      pendingReset = null;
+      fetchPage(r);
+    }
+  }
+}
+
+let searchTimer;
+document.getElementById("search").addEventListener("input", ev => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    currentQuery = ev.target.value.trim();
+    fetchPage(true);
+  }, 250);
+});
+document.getElementById("sort").addEventListener("change", ev => {
+  currentSort = ev.target.value;
+  fetchPage(true);
+});
+moreBtn.addEventListener("click", () => fetchPage(false));
+document.addEventListener("langchange", () => fetchPage(true));
+
+Textures.load().then(() => {
+  initNav();
+  applyLang();
+  fetchPage(true);
+});
+</script>
+</body>
+</html>
